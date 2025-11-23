@@ -7,7 +7,21 @@ const connectDB = require('./config/db');
 const app = express();
 connectDB();
 
-app.use(cors());
+// Restrict CORS to the deployed frontend (Vercel) and local dev (Vite)
+const allowedOrigins = [
+	'https://helpdeskcrm-service.vercel.app',
+	'http://localhost:5173',
+];
+app.use(cors({
+	origin: function (origin, callback) {
+		// allow requests with no origin (like curl, Postman, or server-to-server)
+		if (!origin) return callback(null, true);
+		if (allowedOrigins.indexOf(origin) !== -1) {
+			return callback(null, true);
+		}
+		return callback(new Error('CORS policy: This origin is not allowed'));
+	}
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 
